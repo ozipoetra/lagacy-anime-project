@@ -1,0 +1,47 @@
+---
+import '../styles/globals.css';
+import { ClientRouter, fade } from 'astro:transitions';
+const { title } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="HandheldFriendly" content="true" />
+    <title>{title}</title>
+    <ClientRouter />
+</head>
+<body>
+    <div class="container">
+        <header class="main-header">
+            <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td>
+                        <a href="/" class="logo">
+                            <span class="logo-accent">ANIME</span>SEKAI
+                        </a>
+                    </td>
+                    <td align="right">
+                        <small class="tagline">Legacy Edition</small>
+                    </td>
+                </tr>
+            </table>
+        </header>
+
+        <main transition:animate={fade({ duration: '0.4s' })}>
+            <slot />
+        </main>
+
+        <footer class="main-footer">
+            <div class="footer-links">
+                <a href="/">Home</a> | 
+                <a href="https://github.com/your-repo">Source</a>
+            </div>
+            <p class="copyright">&copy; 2026 <strong>Anime Sekai</strong></p>
+            <p class="low-band">Optimized for Opera Mini</p>
+        </footer>
+    </div>
+</body>
+</html>

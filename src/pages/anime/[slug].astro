@@ -1,0 +1,135 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { fetchApi } from '../../utils/api';
+
+const { slug } = Astro.params;
+const apiEndpoint = `https://anime-sekai.ozi.workers.dev/api/animekompi/details?slug=${slug}`;
+
+const { data, error } = await fetchApi(apiEndpoint);
+const anime = data?.results?.data;
+const related = data?.results?.related || [];
+
+// Jika data tidak ditemukan
+if (!anime && !error) {
+    return Astro.redirect('/404');
+}
+---
+
+<BaseLayout title={anime ? anime.title : 'Detail Anime'}>
+    {error && (
+        <div style="background: #fff3cd; color: #856404; padding: 10px; border: 1px solid #ffeeba; margin: 10px;">
+            {error}. <a href={Astro.url.href}>Coba lagi</a>
+        </div>
+    )}
+
+    {anime && (
+        <div class="anime-detail">
+            <div style="background: #24292e; color: #fff; padding: 15px;">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td width="120" valign="top">
+                            <img 
+                                src={anime.image} 
+                                alt={anime.title} 
+                                width="110" 
+                                height="160" 
+                                class="thumb" 
+                                style="border: 2px solid #fff;"
+                                transition:name={`img-${slug}`}
+                            />
+                        </td>
+                        <td valign="top" style="padding-left: 15px;">
+                            <h1 style="margin: 0 0 5px 0; font-size: 18px; line-height: 1.2;">{anime.title}</h1>
+                            <p style="margin: 0; font-size: 13px; color: #adb5bd;">{anime.alt_title}</p>
+                            <div style="margin-top: 10px;">
+                                <span style="background: #ffc107; color: #000; padding: 2px 6px; font-weight: bold; font-size: 12px;">★ {anime.score}</span>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div style="padding: 10px; background: #f8f9fa; border-bottom: 1px solid #ddd;">
+                {anime.genre.map((g) => (
+                    <a href={`/?genre=${g.slug}`} style="display: inline-block; background: #fff; border: 1px solid #ccc; padding: 2px 8px; margin: 2px; font-size: 11px; text-decoration: none; color: #333;">
+                        {g.title}
+                    </a>
+                ))}
+            </div>
+
+            <div style="padding: 10px; font-size: 13px;">
+                <h3 style="margin: 0 0 10px 0; border-bottom: 1px solid #eee; padding-bottom: 5px;">Informasi</h3>
+                <table width="100%" cellpadding="3" cellspacing="0">
+                    {anime.info.map((item) => (
+                        <tr>
+                            <td width="100" valign="top" style="color: #666;"><strong>{item.info_alt}</strong></td>
+                            <td valign="top">: {item.info_val}</td>
+                        </tr>
+                    ))}
+                </table>
+            </div>
+
+            <div style="padding: 10px; background: #fff;">
+                <h3 style="margin: 0 0 5px 0; border-bottom: 1px solid #eee; padding-bottom: 5px;">Sinopsis</h3>
+                <p style="font-size: 13px; line-height: 1.6; color: #444; margin-top: 5px;">
+                    {anime.synopsis}
+                </p>
+            </div>
+
+            <div style="padding: 10px;">
+                <h3 style="margin: 0 0 10px 0; border-bottom: 1px solid #eee; padding-bottom: 5px;">Daftar Episode</h3>
+                <div style="border: 1px solid #ddd;">
+                    {anime.episode.map((ep) => (
+                        <a href={`/watch/${ep.ep_slug}`} style="display: block; padding: 10px; border-bottom: 1px solid #eee; text-decoration: none; background: #fff;">
+                            <table width="100%">
+                                <tr>
+                                    <td style="font-size: 14px; color: #0056b3;"><strong>Eps {ep.ep_num}</strong></td>
+                                    <td align="right" style="font-size: 11px; color: #999;">{ep.ep_date}</td>
+                                </tr>
+                            </table>
+                        </a>
+                    ))}
+                </div>
+            </div>
+
+            {related.length > 0 && (
+    <div style="padding: 10px; background: #f0f2f5; border-top: 1px solid #ddd;">
+        <h3 style="margin: 0 0 12px 0; font-size: 16px;">Rekomendasi</h3>
+        
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            {/* We map the related items into rows of 3 columns */}
+            {Array.from({ length: Math.ceil(related.length / 3) }).map((_, rowIndex) => (
+                <tr>
+                    {related.slice(rowIndex * 3, rowIndex * 3 + 3).map((rel) => (
+                        <td width="33%" valign="top" style="padding: 5px;">
+                            <a href={`/anime/${rel.slug}`} style="text-decoration: none; display: block;">
+                                <img 
+                                    src={rel.image} 
+                                    width="100%" 
+                                    style="border: 1px solid #ccc; display: block;" 
+                                    alt=""
+                                />
+                                <div style="font-size: 10px; color: #333; margin-top: 4px; line-height: 1.2; max-height: 2.4em; overflow: hidden;">
+                                    {rel.title}
+                                </div>
+                            </a>
+                        </td>
+                    ))}
+                    {/* Fill empty cells if the last row has less than 3 items */}
+                    {related.slice(rowIndex * 3, rowIndex * 3 + 3).length < 3 && 
+                        Array.from({ length: 3 - related.slice(rowIndex * 3, rowIndex * 3 + 3).length }).map(() => (
+                            <td width="33%"></td>
+                        ))
+                    }
+                </tr>
+            ))}
+        </table>
+    </div>
+)}
+        </div>
+    )}
+
+    <div style="padding: 20px; text-align: center;">
+        <a href="/" class="btn">KEMBALI KE HOME</a>
+    </div>
+</BaseLayout>

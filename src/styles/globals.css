@@ -1,0 +1,151 @@
+/* src/styles/globals.css */
+html {
+  scroll-behavior: smooth;
+  background-color: #f0f2f5; /* Light grey background for the "app" feel */
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #1c1e21;
+  line-height: 1.5;
+}
+
+.container {
+  max-width: 500px;
+  margin: 0 auto;
+  background: #ffffff;
+  min-height: 100vh;
+  /* Basic border for structure instead of shadows */
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+}
+
+/* Header/Title styling */
+h2 {
+  padding: 15px 10px 5px 10px;
+  margin: 0;
+  font-size: 18px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #333;
+}
+
+/* The "Card" Look */
+.anime-card {
+  padding: 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.anime-card:hover {
+  background-color: #f9f9f9;
+}
+
+/* Link styling */
+.anime-title {
+  color: #0056b3;
+  text-decoration: none;
+  font-size: 15px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* Modern Image Thumbnail */
+.thumb {
+  border: 1px solid #eee;
+  background: #eee;
+}
+
+/* Modernized Buttons */
+.btn {
+  display: inline-block;
+  padding: 6px 12px;
+  background: #007bff;
+  color: #ffffff !important; /* Force white text */
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: bold;
+  border: none;
+}
+
+.btn.disabled {
+  background: #565656;
+}
+
+/* Form Styling */
+.filter-box {
+  background: #24292e; /* Dark "Pro" look */
+  color: #ffffff;
+  padding: 12px;
+}
+
+.filter-box small {
+  color: #adb5bd;
+}
+
+select, input {
+  border: 1px solid #444;
+  padding: 4px;
+  background: #fff;
+  font-size: 14px;
+}
+
+/* base layout */
+/* Header Styling */
+.main-header {
+    background: #1a1a1a; /* Very dark grey */
+    padding: 12px 10px;
+    border-bottom: 3px solid #007bff; /* Blue accent line */
+}
+
+.logo {
+    color: #ffffff !important;
+    text-decoration: none !important;
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+}
+
+.logo-accent {
+    color: #007bff; /* Same blue as the border */
+}
+
+.tagline {
+    color: #888;
+    font-size: 10px;
+    text-transform: uppercase;
+}
+
+/* Footer Styling */
+.main-footer {
+    background: #f8f9fa;
+    padding: 20px 10px;
+    border-top: 1px solid #dee2e6;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.footer-links {
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+
+.copyright {
+    margin: 0;
+    font-size: 12px;
+    color: #444;
+}
+
+.low-band {
+    margin: 5px 0 0 0;
+    font-size: 10px;
+    color: #999;
+    font-style: italic;
+}
+
+/* Ensure images don't break layout on tiny screens */
+img {
+    max-width: 100%;
+    height: auto;
+}

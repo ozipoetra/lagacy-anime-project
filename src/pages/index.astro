@@ -1,17 +1,111 @@
 ---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { fetchApi } from '../utils/api';
 
+const url = new URL(Astro.request.url);
+const currentPage = Number(url.searchParams.get('page')) || 1;
+const searchQuery = url.searchParams.get('q') || '';
+const statusFilter = url.searchParams.get('status') || ''; // Default to ongoing
+
+// Build the API URL with multiple parameters
+let apiEndpoint = `https://anime-sekai.ozi.workers.dev/api/animekompi/data?page=${currentPage}&status=${statusFilter}`;
+
+if (searchQuery) {
+    apiEndpoint += `&query=${encodeURIComponent(searchQuery)}`;
+}
+
+const { data, error } = await fetchApi(apiEndpoint);
+
+const animeList = data?.results?.data || [];
+const hasNext = data?.results?.pagination?.hasNext || false;
+
+// Helper to keep the URL clean for pagination
+const getPageUrl = (pageNumber) => {
+    const params = new URLSearchParams();
+    params.set('page', pageNumber.toString());
+    params.set('status', statusFilter);
+    if (searchQuery) params.set('q', searchQuery);
+    return `/?${params.toString()}`;
+};
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout title="Anime List">
+    
+    <div class="filter-box">
+        <form action="/" method="GET">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                    <td width="40%">
+                        <small>Status</small><br />
+                        <select name="status" style="width: 95%">
+                            <option value="" selected={statusFilter === ''}>All</option>
+                            <option value="ongoing" selected={statusFilter === 'ongoing'}>Ongoing</option>
+                            <option value="completed" selected={statusFilter === 'completed'}>Completed</option>
+                        </select>
+                    </td>
+                    <td>
+                        <small>Search</small><br />
+                        <input type="text" name="q" value={searchQuery} placeholder="Title..." style="width: 90%;" />
+                    </td>
+                    <td valign="bottom" width="50">
+                        <button type="submit" style="height: 26px; padding: 0 10px; background: #28a745; color: #fff; border: none; font-weight: bold;">GO</button>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+
+    <h2>
+        {statusFilter === '' ? 'All' : statusFilter} Updates
+    </h2>
+
+    {animeList.length > 0 ? (
+        animeList.map((anime) => (
+            <div class="anime-card">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td width="85" valign="top">
+                            <img 
+                                src={anime.image} 
+                                alt="" 
+                                width="80" 
+                                height="110" 
+                                class="thumb" 
+                                transition:name={`img-${anime.slug}`}
+                            />
+                        </td>
+                        <td valign="top" style="padding-left: 12px;">
+                            <a href={`/anime/${anime.slug}`} class="anime-title">
+                                <strong>{anime.title}</strong>
+                            </a>
+                            <div style="font-size: 12px; color: #666;">
+                                <span style="background: #e9ecef; padding: 2px 5px; margin-right: 5px;">{anime.type}</span>
+                                <span>{anime.episode}</span>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        ))
+    ) : (
+        <p style="padding: 20px;">No results found.</p>
+    )}
+
+    <div style="padding: 15px;">
+        <table width="100%">
+            <tr>
+                <td align="left">
+                    {currentPage > 1 && <a href={getPageUrl(currentPage - 1)} class="btn">PREV</a>}
+                    {currentPage === 1 && <button class="btn disabled" disabled>PREV</button>
+                    }
+                </td>
+                <td align="center"><strong>{currentPage}</strong></td>
+                <td align="right">
+                    {hasNext && <a href={getPageUrl(currentPage + 1)} class="btn">NEXT</a>}
+                    {!hasNext && <button class="btn disabled" disabled>NEXT</button>
+                    }
+                </td>
+            </tr>
+        </table>
+    </div>
+</BaseLayout>
