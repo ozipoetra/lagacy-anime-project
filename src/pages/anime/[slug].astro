@@ -15,7 +15,7 @@ if (!anime && !error) {
 }
 ---
 
-<BaseLayout title={anime ? anime.title : 'Detail Anime'}>
+<BaseLayout title={anime?.title+' - Anime Sekai'} image={anime?.image} description={anime?.synopsis?.slice(0,160)} >
     {error && (
         <div style="background: #fff3cd; color: #856404; padding: 10px; border: 1px solid #ffeeba; margin: 10px;">
             {error}. <a href={Astro.url.href}>Coba lagi</a>

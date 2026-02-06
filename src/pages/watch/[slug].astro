@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { fetchApi } from '../../utils/api';
+import { parseBlogger } from '../../utils/blogger';
 
 const { slug } = Astro.params;
 const apiEndpoint = `https://anime-sekai.ozi.workers.dev/api/animekompi/watch?slug=${slug}`;
@@ -12,11 +13,21 @@ const allEpisodes = data?.results?.episodes || [];
 
 if (!watchData && !error) return Astro.redirect('/404');
 
-// Default player adalah streaming pertama
-const defaultPlayer = media?.streaming?.[0]?.url;
+// --- Blogger Logic ---
+const streamingLinks = media?.streaming || [];
+const bloggerServer = streamingLinks.find(s => s.url.includes('blogger.com'));
+let bloggerData = null;
+
+if (bloggerServer) {
+    // Forward the current request to use original headers/IP
+    bloggerData = await parseBlogger(bloggerServer.url, Astro.request);
+}
+
+// Default fallback is the first streaming link if Blogger isn't available
+const defaultPlayer = streamingLinks[0]?.url;
 ---
 
-<BaseLayout title={watchData?.title || 'Watch Anime'}>
+<BaseLayout title={`${watchData?.title} - Anime Sekai`} image={watchData?.image} description={watchData?.synopsis?.slice(0,160)} canonicalURL={Astro.url.origin+'/anime/'+watchData?.navEps?.all}>
     {error && (
         <div style="background: #fff3cd; padding: 10px; border: 1px solid #ffeeba; margin: 10px; font-size: 13px;">
             {error}. <a href={Astro.url.href}>Refresh</a>
@@ -33,7 +44,34 @@ const defaultPlayer = media?.streaming?.[0]?.url;
             </div>
 
             <div style="background: #000; text-align: center; border-bottom: 2px solid #007bff;">
-                {defaultPlayer ? (
+                {bloggerData && !bloggerData.error ? (
+                    /* NATIVE PLAYER (Ad-Free & Fast) */
+                    <div class="native-player">
+                        <video 
+                            controls 
+                            poster={bloggerData.thumbnail} 
+                            style="width: 100%; aspect-ratio: 16/9; background: #000; display: block;"
+                            preload="metadata"
+                        >
+                            {bloggerData.streams.map(s => (
+                                <source src={s.url} type="video/mp4" />
+                            ))}
+                            Browser anda tidak mendukung tag video.
+                        </video>
+                        
+                        <div style="padding: 12px; background: #1a1a1a; text-align: left;">
+                            <p style="color: #adb5bd; font-size: 11px; margin: 0 0 8px 0;">
+                                💡 Opera Mini: Klik tombol hijau di bawah untuk memutar via player HP.
+                            </p>
+                            {bloggerData.streams.map(s => (
+                                <a href={s.url} class="mp4-btn">
+                                    Nonton {s.quality} (Direct MP4)
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                ) : defaultPlayer ? (
+                    /* IFRAME FALLBACK */
                     <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
                         <iframe 
                             src={defaultPlayer} 
@@ -43,30 +81,30 @@ const defaultPlayer = media?.streaming?.[0]?.url;
                     </div>
                 ) : (
                     <div style="padding: 40px 20px; color: #ccc; font-size: 13px;">
-                        Pemutar video tidak tersedia. Silakan gunakan link download di bawah.
+                        Pemutar video tidak tersedia.
                     </div>
                 )}
             </div>
 
             <div style="background: #f8f9fa; padding: 10px; border-bottom: 1px solid #ddd;">
                 <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold;">Ganti Server Streaming:</p>
-                {media?.streaming?.map((stream) => (
-                    <a href={stream.url} target="_blank" class="server-btn">
+                {streamingLinks.map((stream) => (
+                    <a href={stream.url} class="server-btn">
                         {stream.title}
                     </a>
                 ))}
             </div>
 
             <div style="padding: 10px; background: #fff;">
-                <table width="100%">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
                     <tr>
                         <td width="33%">
                             {watchData.navEps.prev && (
                                 <a href={`/watch/${watchData.navEps.prev}`} class="nav-btn">PREV</a>
                             )}
                         </td>
-                        <td width="33%" align="center">
-                            <a href={`/anime/${watchData.navEps.all}`} class="nav-btn">ALL</a>
+                        <td width="33%" align="center" style="padding: 0 5px;">
+                            <a href={`/anime/${watchData.navEps.all}`} class="nav-btn" style="background: #6c757d;">LIST</a>
                         </td>
                         <td width="33%" align="right">
                             {watchData.navEps.next && (
@@ -78,32 +116,40 @@ const defaultPlayer = media?.streaming?.[0]?.url;
             </div>
 
             <div style="padding: 10px; background: #fff; border-top: 1px solid #eee;">
-    <h3 style="margin: 0 0 10px 0; font-size: 15px; border-left: 4px solid #007bff; padding-left: 10px;">Link Download</h3>
-    {media?.download?.map((item) => (
-        <div style="margin-bottom: 15px; border: 1px solid #eee; padding: 8px;">
-            <div style="font-weight: bold; font-size: 13px; margin-bottom: 5px; color: #333;">Resolusi {item.quality}</div>
-            {item.link.map((l) => {
-                // Check if the URL is from pixeldrain and transform it
-                const finalUrl = l.url.includes('pixeldrain.com/u/') 
-                    ? l.url.replace('pixeldrain.com/u/', 'pixeldrain.com/api/file/') 
-                    : l.url;
+                <h3 style="margin: 0 0 10px 0; font-size: 15px; border-left: 4px solid #007bff; padding-left: 10px;">Link Download</h3>
+                {media?.download?.map((item) => (
+                    <div style="margin-bottom: 15px; border: 1px solid #eee; padding: 8px;">
+                        <div style="font-weight: bold; font-size: 13px; margin-bottom: 8px; color: #333;">Resolusi {item.quality}</div>
+                        {item.link.map((l) => {
+                            // Pixeldrain direct API transformation
+                            const finalUrl = l.url.includes('pixeldrain.com/u/') 
+                                ? l.url.replace('pixeldrain.com/u/', 'pixeldrain.com/api/file/') 
+                                : l.url;
 
-                return (
-                    <a href={finalUrl} class="dl-link" target="_blank">
-                        {l.title}
-                    </a>
-                );
-            })}
-        </div>
-    ))}
-</div>
+                            return (
+                                <a href={finalUrl} class="dl-link" target="_blank">
+                                    {l.title}
+                                </a>
+                            );
+                        })}
+                    </div>
+                ))}
+            </div>
 
             <div style="padding: 10px; background: #f0f2f5;">
                 <h3 style="margin: 0 0 10px 0; font-size: 15px;">Semua Episode</h3>
-                <div style="max-height: 250px; overflow-y: auto; border: 1px solid #ddd; background: #fff;">
+                <div style="max-height: 280px; overflow-y: auto; border: 1px solid #ddd; background: #fff;">
                     {allEpisodes.map((ep) => (
-                        <a href={`/watch/${ep.slug}`} style={`display: block; padding: 10px; border-bottom: 1px solid #eee; text-decoration: none; font-size: 13px; ${ep.slug === slug ? 'background: #e7f3ff; color: #007bff; font-weight: bold;' : 'color: #333;'}`}>
-                            Eps {ep.episode} {ep.slug === slug ? '(Watching)' : ''}
+                        <a 
+                            href={`/watch/${ep.slug}`} 
+                            style={`display: block; padding: 12px; border-bottom: 1px solid #eee; text-decoration: none; font-size: 13px; ${ep.slug === slug ? 'background: #e7f3ff; color: #007bff; font-weight: bold;' : 'color: #333;'}`}
+                        >
+                            <table width="100%">
+                                <tr>
+                                    <td>Eps {ep.episode} {ep.slug === slug ? '▶' : ''}</td>
+                                    <td align="right" style="font-size: 10px; color: #999;">{ep.date.split('T')[0]}</td>
+                                </tr>
+                            </table>
                         </a>
                     ))}
                 </div>
@@ -115,17 +161,29 @@ const defaultPlayer = media?.streaming?.[0]?.url;
 <style>
     .server-btn {
         display: inline-block;
-        padding: 5px 10px;
-        background: #e9ecef;
+        padding: 4px 10px;
+        background: #ffffff;
         border: 1px solid #ced4da;
         color: #495057;
         text-decoration: none;
         font-size: 11px;
         margin: 2px;
     }
+    .mp4-btn {
+        display: inline-block;
+        padding: 8px 12px;
+        background: #28a745;
+        color: #fff !important;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: bold;
+        margin-right: 8px;
+        margin-bottom: 8px;
+        border: none;
+    }
     .nav-btn {
         display: block;
-        padding: 8px;
+        padding: 10px;
         background: #007bff;
         color: #fff !important;
         text-decoration: none;
@@ -135,12 +193,13 @@ const defaultPlayer = media?.streaming?.[0]?.url;
     }
     .dl-link {
         display: inline-block;
-        padding: 4px 8px;
+        padding: 5px 10px;
         background: #28a745;
         color: #fff !important;
         text-decoration: none;
         font-size: 11px;
-        margin-right: 5px;
-        margin-bottom: 5px;
+        margin-right: 6px;
+        margin-bottom: 6px;
+        font-weight: bold;
     }
 </style>

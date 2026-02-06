@@ -29,7 +29,7 @@ const getPageUrl = (pageNumber) => {
 };
 ---
 
-<BaseLayout title="Anime List">
+<BaseLayout title={currentPage > 1 ? `Page ${currentPage} - Anime Sekai` : 'Anime Sekai - Nonton Anime Sub Indo Legacy'}>
     
     <div class="filter-box">
         <form action="/" method="GET">
@@ -37,7 +37,7 @@ const getPageUrl = (pageNumber) => {
                 <tr>
                     <td width="40%">
                         <small>Status</small><br />
-                        <select name="status" style="width: 95%">
+                        <select name="status" style="width: 95%" aria-label="Status">
                             <option value="" selected={statusFilter === ''}>All</option>
                             <option value="ongoing" selected={statusFilter === 'ongoing'}>Ongoing</option>
                             <option value="completed" selected={statusFilter === 'completed'}>Completed</option>

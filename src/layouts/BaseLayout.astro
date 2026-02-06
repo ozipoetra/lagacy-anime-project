@@ -1,16 +1,46 @@
 ---
 import '../styles/globals.css';
 import { ClientRouter, fade } from 'astro:transitions';
-const { title } = Astro.props;
+
+const { 
+    title = "Anime Sekai - Nonton Anime Sub Indo Legacy", 
+    description = "Download dan Streaming anime subtitle Indonesia terlengkap dan teringan. Dioptimalkan untuk Opera Mini dan perangkat legacy.",
+    image = "https://i0.wp.com/github.com/ozipoetra.png", // Path to your default site banner
+    canonicalURL = Astro.url.href,
+    type = "website"
+} = Astro.props;
+
+const siteName = "Anime Sekai";
 ---
 
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="id"> <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="HandheldFriendly" content="true" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#007bff" />
+    
     <title>{title}</title>
+    <meta name="title" content={title} />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={image} />
+    <meta property="og:site_name" content={siteName} />
+
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content={canonicalURL} />
+    <meta property="twitter:title" content={title} />
+    <meta property="twitter:description" content={description} />
+    <meta property="twitter:image" content={image} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
     <ClientRouter />
 </head>
 <body>
@@ -40,7 +70,7 @@ const { title } = Astro.props;
                 <a href="https://github.com/ozipoetra/lagacy-anime-project">Source</a>
             </div>
             <p class="copyright">&copy; 2026 <strong>Anime Sekai</strong></p>
-            <p class="low-band">Optimized for Opera Mini</p>
+            <p class="low-band">Optimized for Opera Mini & Low Bandwidth</p>
         </footer>
     </div>
 </body>
