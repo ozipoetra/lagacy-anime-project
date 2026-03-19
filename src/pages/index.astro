@@ -1,17 +1,47 @@
 ---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { fetchApi } from '../utils/api';
+import { API_ENDPOINTS } from '../utils/config';
+import FilterBox from '../components/FilterBox.astro';
+import AnimeCard from '../components/AnimeCard.astro';
+import Pagination from '../components/Pagination.astro';
 
+const url = new URL(Astro.request.url);
+const currentPage = Number(url.searchParams.get('page')) || 1;
+const searchQuery = url.searchParams.get('q') || '';
+const statusFilter = url.searchParams.get('status') || '';
+
+const apiEndpoint = API_ENDPOINTS.animeList(currentPage, statusFilter, searchQuery);
+const { data, error } = await fetchApi(apiEndpoint);
+
+const animeList = data?.results?.data || [];
+const hasNext = data?.results?.pagination?.hasNext || false;
+
+const getPageUrl = (pageNumber) => {
+  const params = new URLSearchParams();
+  params.set('page', pageNumber.toString());
+  params.set('status', statusFilter);
+  if (searchQuery) params.set('q', searchQuery);
+  return `/?${params.toString()}`;
+};
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout title={currentPage > 1 ? `Page ${currentPage} - Anime Sekai` : 'Anime Sekai - Nonton Anime Sub Indo Legacy'}>
+  <FilterBox statusFilter={statusFilter} searchQuery={searchQuery} />
+
+  <h2>{statusFilter === '' ? 'All' : statusFilter} Updates</h2>
+
+  {error && (
+    <div class="error-message">
+      {error}. <a href={Astro.url.href}>Coba lagi</a>
+    </div>
+  )}
+
+  {animeList.length > 0 ? (
+    animeList.map((anime) => <AnimeCard anime={anime} />)
+  ) : (
+    <p style="padding: 20px;">No results found.</p>
+  )}
+
+  <Pagination currentPage={currentPage} hasNext={hasNext} getPageUrl={getPageUrl} />
+</BaseLayout>

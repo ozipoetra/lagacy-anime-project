@@ -1,0 +1,26 @@
+---
+const { related } = Astro.props;
+---
+
+<div class="related-anime">
+  <h3>Rekomendasi</h3>
+  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+    {Array.from({ length: Math.ceil(related.length / 3) }).map((_, rowIndex) => (
+      <tr>
+        {related.slice(rowIndex * 3, rowIndex * 3 + 3).map((rel) => (
+          <td width="33%" valign="top" class="related-item">
+            <a href={`/anime/${rel.slug}`}>
+              <img src={rel.image} width="100%" alt="" />
+              <div class="related-title">{rel.title}</div>
+            </a>
+          </td>
+        ))}
+        {related.slice(rowIndex * 3, rowIndex * 3 + 3).length < 3 && 
+          Array.from({ length: 3 - related.slice(rowIndex * 3, rowIndex * 3 + 3).length }).map(() => (
+            <td width="33%"></td>
+          ))
+        }
+      </tr>
+    ))}
+  </table>
+</div>

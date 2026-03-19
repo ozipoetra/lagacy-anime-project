@@ -1,0 +1,90 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { fetchApi } from '../../utils/api';
+import { API_ENDPOINTS } from '../../utils/config';
+import GenreTags from '../../components/GenreTags.astro';
+import EpisodeList from '../../components/EpisodeList.astro';
+import RelatedAnime from '../../components/RelatedAnime.astro';
+
+const { slug } = Astro.params;
+const apiEndpoint = API_ENDPOINTS.animeDetail(slug);
+
+const { data, error } = await fetchApi(apiEndpoint);
+const anime = data?.results?.data;
+const related = data?.results?.related || [];
+
+if (!anime && !error) {
+  return Astro.redirect('/404');
+}
+---
+
+<BaseLayout title={anime?.title+' - Anime Sekai'} image={anime?.image} description={anime?.synopsis?.slice(0,160)}>
+  {error && (
+    <div class="error-message">
+      {error}. <a href={Astro.url.href}>Coba lagi</a>
+    </div>
+  )}
+
+  {anime && (
+    <div class="anime-detail">
+      <div class="anime-detail-header">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td width="120" valign="top">
+              <img
+                src={anime.image+"?w=160"}
+                alt={anime.title}
+                width="110"
+                height="160"
+                class="thumb"
+                style="border: 2px solid #fff;"
+                transition:name={`img-${slug}`}
+              />
+            </td>
+            <td valign="top" style="padding-left: 15px;">
+              <h1>{anime.title}</h1>
+              <p class="alt-title">{anime.alt_title}</p>
+              <div style="margin-top: 10px;">
+                <span class="score-badge">★ {anime.score}</span>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <GenreTags genres={anime.genre} />
+
+      <div class="anime-info">
+        <h3>Informasi</h3>
+        <table width="100%" cellpadding="3" cellspacing="0">
+          {anime.info.map((item) => (
+            <tr>
+              <td width="100" valign="top" class="info-label"><strong>{item.info_alt}</strong></td>
+              <td valign="top">: {item.info_val}</td>
+            </tr>
+          ))}
+        </table>
+      </div>
+
+      <div class="synopsis">
+        <h3>Sinopsis</h3>
+        <p>{anime.synopsis}</p>
+      </div>
+
+      <div style="padding: 10px;">
+        <h3>Daftar Episode</h3>
+        <EpisodeList episodes={anime.episode.map(ep => ({
+          slug: ep.ep_slug,
+          episode: ep.ep_num,
+          ep_date: ep.ep_date
+        }))} />
+      </div>
+
+      {related.length > 0 && <RelatedAnime related={related} />}
+    </div>
+  )}
+
+  <div class="back-button">
+    <a href="/" class="btn">KEMBALI KE HOME</a>
+  </div>
+</BaseLayout>

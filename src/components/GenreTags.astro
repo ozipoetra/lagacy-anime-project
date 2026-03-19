@@ -1,0 +1,9 @@
+---
+const { genres } = Astro.props;
+---
+
+<div class="genre-tags">
+  {genres.map((g) => (
+    <a href={`/?genre=${g.slug}`} class="genre-tag">{g.title}</a>
+  ))}
+</div>

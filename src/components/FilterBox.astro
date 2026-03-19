@@ -1,0 +1,27 @@
+---
+const { statusFilter = '', searchQuery = '' } = Astro.props;
+---
+
+<div class="filter-box">
+  <form action="/" method="GET">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td width="40%">
+          <small>Status</small><br />
+          <select name="status" style="width: 95%" aria-label="Status">
+            <option value="" selected={statusFilter === ''}>All</option>
+            <option value="ongoing" selected={statusFilter === 'ongoing'}>Ongoing</option>
+            <option value="completed" selected={statusFilter === 'completed'}>Completed</option>
+          </select>
+        </td>
+        <td>
+          <small>Search</small><br />
+          <input type="text" name="q" value={searchQuery} placeholder="Title..." style="width: 90%;" />
+        </td>
+        <td valign="bottom" width="50">
+          <button type="submit" class="btn">GO</button>
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>

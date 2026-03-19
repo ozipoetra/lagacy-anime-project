@@ -1,0 +1,12 @@
+---
+const { anime } = Astro.props;
+---
+
+<div class="anime-info">
+  {anime.info.map((item) => (
+    <tr>
+      <td width="100" valign="top" class="info-label"><strong>{item.info_alt}</strong></td>
+      <td valign="top">: {item.info_val}</td>
+    </tr>
+  ))}
+</div>

@@ -1,0 +1,18 @@
+---
+const { downloads } = Astro.props;
+---
+
+<div class="download-section">
+  <h3>Link Download</h3>
+  {downloads.map((item) => (
+    <div class="download-quality">
+      <div class="quality-label">Resolusi {item.quality}</div>
+      {item.link.map((l) => {
+        const finalUrl = l.url.includes('pixeldrain.com/u/')
+          ? l.url.replace('pixeldrain.com/u/', 'pixeldrain.com/api/file/')
+          : l.url;
+        return <a href={finalUrl} class="dl-link" target="_blank">{l.title}</a>;
+      })}
+    </div>
+  ))}
+</div>

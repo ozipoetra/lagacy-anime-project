@@ -1,0 +1,63 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { fetchApi } from '../../utils/api';
+import { parseBlogger } from '../../utils/blogger';
+import { API_ENDPOINTS } from '../../utils/config';
+import VideoPlayer from '../../components/VideoPlayer.astro';
+import ServerButtons from '../../components/ServerButtons.astro';
+import EpisodeNav from '../../components/EpisodeNav.astro';
+import DownloadLinks from '../../components/DownloadLinks.astro';
+import EpisodeScroll from '../../components/EpisodeScroll.astro';
+
+const { slug } = Astro.params;
+const apiEndpoint = API_ENDPOINTS.watchEpisode(slug);
+
+const { data, error } = await fetchApi(apiEndpoint);
+const watchData = data?.results?.data;
+const media = data?.results?.media;
+const allEpisodes = data?.results?.episodes || [];
+
+if (!watchData && !error) return Astro.redirect('/404');
+
+const streamingLinks = media?.streaming || [];
+const bloggerServer = streamingLinks.find(s => s.url.includes('blogger.com'));
+let bloggerData = null;
+
+if (bloggerServer) {
+  bloggerData = await parseBlogger(bloggerServer.url, Astro.request);
+}
+
+const defaultPlayer = streamingLinks[0]?.url;
+---
+
+<BaseLayout 
+  title={`${watchData?.title} - Anime Sekai`} 
+  image={watchData?.image} 
+  description={watchData?.synopsis?.slice(0,160)} 
+  canonicalURL={Astro.url.origin+'/anime/'+watchData?.navEps?.all}
+>
+  {error && (
+    <div class="error-message">
+      {error}. <a href={Astro.url.href}>Refresh</a>
+    </div>
+  )}
+
+  {watchData && (
+    <div class="watch-container">
+      <div class="watch-header">
+        <h1>{watchData.title}</h1>
+        <a href={`/anime/${watchData.navEps.all}`}>&laquo; Kembali ke Daftar Episode</a>
+      </div>
+
+      <VideoPlayer bloggerData={bloggerData} defaultPlayer={defaultPlayer} />
+
+      <ServerButtons streamingLinks={streamingLinks} />
+
+      <EpisodeNav prev={watchData.navEps.prev} next={watchData.navEps.next} allSlug={watchData.navEps.all} />
+
+      {media?.download && <DownloadLinks downloads={media.download} />}
+
+      <EpisodeScroll episodes={allEpisodes} currentSlug={slug} />
+    </div>
+  )}
+</BaseLayout>

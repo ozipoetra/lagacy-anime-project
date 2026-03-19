@@ -1,0 +1,53 @@
+---
+interface Stream {
+  url: string;
+  quality: string;
+}
+
+interface BloggerData {
+  streams?: Stream[];
+  thumbnail?: string;
+  error?: string;
+}
+
+interface Props {
+  bloggerData?: BloggerData | null;
+  defaultPlayer?: string;
+}
+
+const { bloggerData, defaultPlayer }: Props = Astro.props;
+---
+
+<div class="video-container">
+  {bloggerData && !bloggerData.error && bloggerData.streams?.length > 0 ? (
+    <div class="native-player">
+      <video
+        controls
+        poster={bloggerData.thumbnail}
+        class="video-element"
+        preload="metadata"
+      >
+        {bloggerData.streams.map((s: Stream) => (
+          <source src={s.url} type="video/mp4" />
+        ))}
+        Browser anda tidak mendukung tag video.
+      </video>
+
+      <div class="direct-links">
+        <p class="opera-hint">Opera Mini: Klik tombol hijau di bawah untuk memutar via player HP.</p>
+        {bloggerData.streams.map((s: Stream) => (
+          <a href={s.url} class="mp4-btn">Nonton {s.quality} (Direct MP4)</a>
+        ))}
+      </div>
+    </div>
+  ) : defaultPlayer ? (
+    <div class="iframe-container">
+      <iframe src={defaultPlayer} allowfullscreen></iframe>
+      <div class="direct-links">
+        <p class="opera-hint">Opera Mini: Jika video tidak muncul, coba server lain di bawah.</p>
+      </div>
+    </div>
+  ) : (
+    <div class="no-player">Pemutar video tidak tersedia.</div>
+  )}
+</div>

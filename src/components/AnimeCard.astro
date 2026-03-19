@@ -1,0 +1,29 @@
+---
+const { anime } = Astro.props;
+---
+
+<div class="anime-card">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+    <tr>
+      <td width="85" valign="top">
+        <img
+          src={anime.image+"?w=160"}
+          alt=""
+          width="80"
+          height="110"
+          class="thumb"
+          transition:name={`img-${anime.slug}`}
+        />
+      </td>
+      <td valign="top" style="padding-left: 12px;">
+        <a href={`/anime/${anime.slug}`} class="anime-title">
+          <strong>{anime.title}</strong>
+        </a>
+        <div class="anime-meta">
+          <span class="meta-type">{anime.type}</span>
+          <span>{anime.episode}</span>
+        </div>
+      </td>
+    </tr>
+  </table>
+</div>

@@ -1,0 +1,30 @@
+---
+interface EpisodeItem {
+  slug: string;
+  episode: string | number;
+  ep_date: string;
+}
+
+interface Props {
+  episodes: EpisodeItem[];
+  currentSlug?: string;
+}
+
+const { episodes, currentSlug } = Astro.props;
+---
+
+<div class="episode-list">
+  {episodes.map((ep: EpisodeItem) => (
+    <a
+      href={`/watch/${ep.slug}`}
+      class={`episode-item ${ep.slug === currentSlug ? 'active' : ''}`}
+    >
+      <table width="100%">
+        <tr>
+          <td><strong>Eps {ep.episode}</strong></td>
+          <td align="right" class="episode-date">{ep.ep_date}</td>
+        </tr>
+      </table>
+    </a>
+  ))}
+</div>

@@ -1,0 +1,22 @@
+---
+const { episodes, currentSlug } = Astro.props;
+---
+
+<div class="episode-scroll">
+  <h3>Semua Episode</h3>
+  <div class="episode-scroll-list">
+    {episodes.map((ep) => (
+      <a 
+        href={`/watch/${ep.slug}`}
+        class={`episode-scroll-item ${ep.slug === currentSlug ? 'active' : ''}`}
+      >
+        <table width="100%">
+          <tr>
+            <td>Eps {ep.episode} {ep.slug === currentSlug ? '▶' : ''}</td>
+            <td align="right" class="episode-date">{ep.date.split('T')[0]}</td>
+          </tr>
+        </table>
+      </a>
+    ))}
+  </div>
+</div>

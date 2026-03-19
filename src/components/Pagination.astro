@@ -1,0 +1,25 @@
+---
+const { currentPage, hasNext, getPageUrl } = Astro.props;
+---
+
+<div class="pagination">
+  <table width="100%">
+    <tr>
+      <td align="left">
+        {currentPage > 1 ? (
+          <a href={getPageUrl(currentPage - 1)} class="btn">PREV</a>
+        ) : (
+          <button class="btn disabled" disabled>PREV</button>
+        )}
+      </td>
+      <td align="center"><strong>{currentPage}</strong></td>
+      <td align="right">
+        {hasNext ? (
+          <a href={getPageUrl(currentPage + 1)} class="btn">NEXT</a>
+        ) : (
+          <button class="btn disabled" disabled>NEXT</button>
+        )}
+      </td>
+    </tr>
+  </table>
+</div>

@@ -1,0 +1,10 @@
+---
+const { streamingLinks } = Astro.props;
+---
+
+<div class="server-buttons">
+  <p class="server-label">Ganti Server Streaming:</p>
+  {streamingLinks.map((stream) => (
+    <a href={stream.url} class="server-btn">{stream.title}</a>
+  ))}
+</div>
